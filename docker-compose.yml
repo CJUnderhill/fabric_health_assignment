@@ -1,0 +1,40 @@
+services:
+  api:
+    container_name: api
+    build: .
+    ports:
+      - '3000:3000'
+    depends_on:
+      mongo:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+        restart: true
+    networks:
+      - nest-network
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - '27017:27017'
+    networks:
+      - nest-network
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    networks:
+      - nest-network
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  nest-network:
+    driver: bridge
